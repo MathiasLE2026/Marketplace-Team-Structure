@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace — Function Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --border-strong: #c8c5b8;
+    --text: #1a1916;
+    --text2: #6b6860;
+    --text3: #a09d94;
+    --accent: #2563eb;
+    --accent-bg: #eff4ff;
+    --warn: #d97706;
+    --warn-bg: #fffbeb;
+    --success: #059669;
+    --success-bg: #f0fdf4;
+    --info-bg: #f0f4ff;
+    --radius: 12px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .topbar-sep { width: 1px; height: 18px; background: var(--border); }
+  .topbar-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface2); }
+  .btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+  .btn-primary:hover { background: #333; color: #fff; border-color: #333; }
+  .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  .edit-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 500;
+    padding: 3px 8px; border-radius: 20px;
+    background: var(--warn-bg); color: var(--warn);
+    border: 1px solid #fde68a;
+  }
+  .edit-badge.hidden { display: none; }
+
+  /* ── PAGE ── */
+  .page { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .page-header { margin-bottom: 2.5rem; }
+  .dept-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 6px;
+  }
+  .dept-name {
+    font-size: 26px; font-weight: 300; color: var(--text);
+    letter-spacing: -0.02em; line-height: 1.2;
+  }
+  .dept-name span { font-weight: 500; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 2rem; padding: 10px 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); width: fit-content;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dash { width: 20px; height: 1px; background: var(--border-strong); flex-shrink: 0; }
+
+  /* ── TREE ── */
+  .tree { display: flex; flex-direction: column; align-items: center; }
+  .connector-v { width: 1px; height: 28px; background: var(--border-strong); }
+  .connector-v.short { height: 20px; }
+
+  .tier { display: flex; justify-content: center; gap: 16px; width: 100%; }
+  .tier-col { display: flex; flex-direction: column; align-items: center; }
+
+  .h-bar-wrap {
+    display: flex; justify-content: center;
+    position: relative; width: 100%; height: 0; margin: 0;
+  }
+  .h-bar {
+    position: absolute; top: 0; height: 1px;
+    background: var(--border-strong);
+  }
+
+  /* ── CARDS ── */
+  .card {
+    width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+  .card.open { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg), var(--shadow); }
+  .card.hiring { border-style: dashed; background: var(--warn-bg); }
+  .card.hiring.open { border-color: var(--warn); box-shadow: 0 0 0 3px var(--warn-bg), var(--shadow); }
+  .card.contractor { background: var(--surface2); }
+
+  .card-header { padding: 12px 14px 10px; cursor: pointer; user-select: none; }
+  .card-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
+    padding: 2px 7px; border-radius: 20px; margin-bottom: 7px;
+  }
+  .badge-head { background: var(--info-bg); color: var(--accent); border: 1px solid #c7d7f8; }
+  .badge-hiring { background: var(--warn-bg); color: var(--warn); border: 1px solid #fde68a; }
+  .badge-contract { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  .card-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.3; }
+  .card-sub { font-size: 11px; color: var(--text2); margin-top: 3px; }
+
+  .card-toggle {
+    padding: 6px 14px 10px;
+    font-size: 11px; color: var(--text3);
+    display: flex; align-items: center; gap: 4px;
+    cursor: pointer; user-select: none;
+  }
+  .card-toggle svg { width: 12px; height: 12px; transition: transform 0.2s; flex-shrink: 0; }
+  .card.open .card-toggle svg { transform: rotate(180deg); }
+
+  .card-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease;
+    border-top: 0px solid var(--border);
+  }
+  .card.open .card-body { max-height: 800px; border-top-width: 1px; }
+
+  .card-section { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .card-section:last-child { border-bottom: none; padding-bottom: 12px; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text3); margin-bottom: 6px;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    font-size: 10px; padding: 2px 7px; border-radius: 4px;
+    background: var(--surface2); color: var(--text2);
+    border: 1px solid var(--border); line-height: 1.5;
+  }
+
+  .goal-text { font-size: 11px; color: var(--text); line-height: 1.55; font-style: italic; }
+
+  .bullet-list { list-style: none; }
+  .bullet-list li {
+    font-size: 11px; color: var(--text); line-height: 1.55;
+    display: flex; gap: 6px; align-items: flex-start; padding: 1px 0;
+  }
+  .bullet-list li .dot { color: var(--text3); flex-shrink: 0; margin-top: 1px; }
+  .bullet-list.kpi li .dot { color: var(--accent); font-size: 10px; }
+
+  /* ── EDITABLE ── */
+  [contenteditable] { outline: none; }
+  .editing [contenteditable] {
+    border-radius: 3px;
+    background: #fafff0;
+    box-shadow: inset 0 0 0 1px #a3e635;
+    padding: 1px 3px; margin: -1px -3px;
+    cursor: text;
+  }
+  .editing [contenteditable]:focus {
+    background: #f0ffe0;
+    box-shadow: inset 0 0 0 1.5px #65a30d;
+  }
+  .editing .tag [contenteditable]:focus { display: inline; }
+
+  /* tag editing */
+  .tag-add-btn {
+    display: none;
+    font-size: 10px; padding: 2px 7px; border-radius: 4px;
+    background: transparent; color: var(--accent);
+    border: 1px dashed var(--accent); line-height: 1.5;
+    cursor: pointer;
+  }
+  .editing .tag-add-btn { display: inline-flex; }
+  .tag-del {
+    display: none; margin-left: 3px; color: var(--text3);
+    cursor: pointer; font-size: 10px; line-height: 1;
+  }
+  .editing .tag-del { display: inline; }
+
+  /* list item editing */
+  .item-del {
+    display: none; margin-left: 4px; color: var(--text3);
+    cursor: pointer; font-size: 11px; flex-shrink: 0;
+  }
+  .editing .item-del { display: inline; }
+  .item-add-btn {
+    display: none; font-size: 10px; color: var(--accent);
+    background: none; border: none; cursor: pointer; padding: 2px 0;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .editing .item-add-btn { display: flex; align-items: center; gap: 4px; }
+
+  /* ── SAVE TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--text); color: #fff;
+    font-size: 12px; padding: 10px 16px; border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.2s; pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── INSTRUCTIONS PANEL ── */
+  .instructions {
+    display: none;
+    background: var(--info-bg); border: 1px solid #c7d7f8;
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    margin-bottom: 1.5rem; font-size: 12px; color: var(--text2);
+    line-height: 1.7;
+  }
+  .editing .instructions { display: block; }
+  .instructions strong { color: var(--text); font-weight: 500; }
+
+  @media (max-width: 680px) {
+    .tier { flex-direction: column; align-items: center; }
+    .h-bar { display: none; }
+    .card { width: 280px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">Marketplace</span>
+    <div class="topbar-sep"></div>
+    <span class="topbar-title">Function Map</span>
+  </div>
+  <div class="topbar-right">
+    <span class="edit-badge hidden" id="edit-badge">
+      <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><circle cx="8" cy="8" r="4"/></svg>
+      Editing
+    </span>
+    <button class="btn" id="btn-edit" onclick="toggleEdit()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/></svg>
+      Edit
+    </button>
+    <button class="btn btn-primary" id="btn-save" onclick="saveHTML()" style="display:none">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 11v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1h6l3 3v5z"/><path d="M5 13V9h6v4M5 3v3h5"/></svg>
+      Save HTML
+    </button>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <div class="page-header">
+    <div class="dept-label">Department</div>
+    <div class="dept-name"><span contenteditable="false" id="dept-title">Marketplace</span> — Function Map</div>
+  </div>
+
+  <div class="instructions">
+    <strong>Edit mode is on.</strong> Click any text to edit it directly — role titles, goals, measurements, KPIs, and ownership tags are all editable.
+    Use the <strong>+ add</strong> buttons to add new list items or tags, and the <strong>×</strong> buttons to remove them.
+    When you're done, click <strong>Save HTML</strong> to download the updated file and replace it in your repository.
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Head of dept</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div> Hiring now</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--border-strong)"></div> Contractor</div>
+    <div class="legend-item"><span style="font-size:10px;color:var(--accent);font-weight:500">→</span> KPI</div>
+    <div class="legend-item"><span style="font-size:10px;color:var(--text3)">·</span> Key measurement</div>
+  </div>
+
+  <div class="tree">
+
+    <!-- HEAD OF MARKETPLACE -->
+    <div class="tier">
+      <div class="tier-col">
+        <div class="card open" id="card-head">
+          <div class="card-header" onclick="toggle('head')">
+            <div class="card-badge badge-head">Head of dept</div>
+            <div class="card-title"><span contenteditable="false">Head of Marketplace</span></div>
+            <div class="card-sub"><span contenteditable="false">You</span></div>
+          </div>
+          <div class="card-toggle" onclick="toggle('head')">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4"/></svg>
+            details
+          </div>
+          <div class="card-body" id="body-head">
+            <div class="card-section">
+              <div class="section-label">Direct reports</div>
+              <ul class="bullet-list" id="list-head-reports">
+                <li><span class="dot">·</span><span contenteditable="false">PPC &amp; Trade</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Trade &amp; Growth</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Operations Associate</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-head-reports','·')">+ add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-v"></div>
+    <div class="h-bar-wrap"><div class="h-bar" id="hbar-main"></div></div>
+
+    <!-- TIER 1: 3 direct reports -->
+    <div class="tier" id="tier-main">
+
+      <!-- PPC & TRADE -->
+      <div class="tier-col" id="col-ppc">
+        <div class="connector-v short"></div>
+        <div class="card hiring" id="card-ppc">
+          <div class="card-header" onclick="toggle('ppc')">
+            <div class="card-badge badge-hiring">Hiring</div>
+            <div class="card-title"><span contenteditable="false">PPC &amp; Trade</span></div>
+            <div class="card-sub"><span contenteditable="false">UK &amp; US · Amazon</span></div>
+          </div>
+          <div class="card-toggle" onclick="toggle('ppc')">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4"/></svg>
+            details
+          </div>
+          <div class="card-body" id="body-ppc">
+            <div class="card-section">
+              <div class="section-label">Owns</div>
+              <div class="tags" id="tags-ppc">
+                <span class="tag"><span contenteditable="false">TTS + AMZ Trade</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">SEO &amp; CVR%</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">PPC &amp; Advertising</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">Video Generation</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">Reporting</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag-add-btn" onclick="addTag('tags-ppc')">+ tag</span>
+              </div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Goal</div>
+              <div class="goal-text"><span contenteditable="false">Organic growth driven by on-platform initiatives</span></div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Key measurements</div>
+              <ul class="bullet-list" id="list-ppc-meas">
+                <li><span class="dot">·</span><span contenteditable="false">Organic growth</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Advertising efficiency</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-ppc-meas','·')">+ add</button>
+            </div>
+            <div class="card-section">
+              <div class="section-label">KPIs</div>
+              <ul class="bullet-list kpi" id="list-ppc-kpi">
+                <li><span class="dot">→</span><span contenteditable="false">Revenue vs FC</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">Profit vs FC</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">Amazon BSR — top 10 SKUs</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">TACOS target vs FC</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-ppc-kpi','→')">+ add</button>
+            </div>
+          </div>
+        </div>
+        <!-- Graphic Designer -->
+        <div class="connector-v short"></div>
+        <div class="card contractor" id="card-gd">
+          <div class="card-header" onclick="toggle('gd')">
+            <div class="card-badge badge-contract">Contractor</div>
+            <div class="card-title"><span contenteditable="false">Graphic Designer</span></div>
+            <div class="card-sub"><span contenteditable="false">Reports to PPC &amp; Trade</span></div>
+          </div>
+          <div class="card-toggle" onclick="toggle('gd')">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4"/></svg>
+            details
+          </div>
+          <div class="card-body" id="body-gd">
+            <div class="card-section">
+              <div class="section-label">Goal</div>
+              <div class="goal-text"><span contenteditable="false">Improve CVR% on-platform through quality creative</span></div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Key measurements</div>
+              <ul class="bullet-list" id="list-gd-meas">
+                <li><span class="dot">·</span><span contenteditable="false">Quality of output</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Efficiency</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-gd-meas','·')">+ add</button>
+            </div>
+            <div class="card-section">
+              <div class="section-label">KPIs</div>
+              <ul class="bullet-list kpi" id="list-gd-kpi">
+                <li><span class="dot">→</span><span contenteditable="false">Hours to complete vs benchmark</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">£ ROI of experiments implemented</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-gd-kpi','→')">+ add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRADE & GROWTH -->
+      <div class="tier-col" id="col-tg">
+        <div class="connector-v short"></div>
+        <div class="card hiring" id="card-tg">
+          <div class="card-header" onclick="toggle('tg')">
+            <div class="card-badge badge-hiring">Hiring</div>
+            <div class="card-title"><span contenteditable="false">Trade &amp; Growth</span></div>
+            <div class="card-sub"><span contenteditable="false">EU · Expansion · AI</span></div>
+          </div>
+          <div class="card-toggle" onclick="toggle('tg')">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4"/></svg>
+            details
+          </div>
+          <div class="card-body" id="body-tg">
+            <div class="card-section">
+              <div class="section-label">Owns</div>
+              <div class="tags" id="tags-tg">
+                <span class="tag"><span contenteditable="false">AMZ EU Trade + PPC</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">Marketplace Expansion</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">AI Optimisation</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag-add-btn" onclick="addTag('tags-tg')">+ tag</span>
+              </div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Goal</div>
+              <div class="goal-text"><span contenteditable="false">Accelerate revenue from non-core and emerging channels</span></div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Key measurements</div>
+              <ul class="bullet-list" id="list-tg-meas">
+                <li><span class="dot">·</span><span contenteditable="false">Revenue from non-core channels &amp; growth initiatives</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Growth in emerging channels</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-tg-meas','·')">+ add</button>
+            </div>
+            <div class="card-section">
+              <div class="section-label">KPIs</div>
+              <ul class="bullet-list kpi" id="list-tg-kpi">
+                <li><span class="dot">→</span><span contenteditable="false">Revenue — non-core channels</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">EU Revenue vs FC</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">AI visibility score</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-tg-kpi','→')">+ add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPERATIONS ASSOCIATE -->
+      <div class="tier-col" id="col-ops">
+        <div class="connector-v short"></div>
+        <div class="card hiring" id="card-ops">
+          <div class="card-header" onclick="toggle('ops')">
+            <div class="card-badge badge-hiring">Hiring</div>
+            <div class="card-title"><span contenteditable="false">Operations Associate</span></div>
+            <div class="card-sub"><span contenteditable="false">Efficiency &amp; Automations</span></div>
+          </div>
+          <div class="card-toggle" onclick="toggle('ops')">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4"/></svg>
+            details
+          </div>
+          <div class="card-body" id="body-ops">
+            <div class="card-section">
+              <div class="section-label">Owns</div>
+              <div class="tags" id="tags-ops">
+                <span class="tag"><span contenteditable="false">Account &amp; Listing Health</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">Product Launch</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">Data Accessibility</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">Automations</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag-add-btn" onclick="addTag('tags-ops')">+ tag</span>
+              </div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Goal</div>
+              <div class="goal-text"><span contenteditable="false">Improve team efficiency as we scale through automation and data</span></div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Key measurements</div>
+              <ul class="bullet-list" id="list-ops-meas">
+                <li><span class="dot">·</span><span contenteditable="false">Time saved on internal processes</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Operating bar — BAU performance</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Data-driven decision making</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-ops-meas','·')">+ add</button>
+            </div>
+            <div class="card-section">
+              <div class="section-label">KPIs</div>
+              <ul class="bullet-list kpi" id="list-ops-kpi">
+                <li><span class="dot">→</span><span contenteditable="false">Cost saved via automations</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">Analytics tool availability</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-ops-kpi','→')">+ add</button>
+            </div>
+          </div>
+        </div>
+        <!-- Marketplace Ops Contractor -->
+        <div class="connector-v short"></div>
+        <div class="card contractor" id="card-mops">
+          <div class="card-header" onclick="toggle('mops')">
+            <div class="card-badge badge-contract">Contractor</div>
+            <div class="card-title"><span contenteditable="false">Marketplace Ops</span></div>
+            <div class="card-sub"><span contenteditable="false">Reports to Ops Associate</span></div>
+          </div>
+          <div class="card-toggle" onclick="toggle('mops')">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l4 4 4-4"/></svg>
+            details
+          </div>
+          <div class="card-body" id="body-mops">
+            <div class="card-section">
+              <div class="section-label">Owns</div>
+              <div class="tags" id="tags-mops">
+                <span class="tag"><span contenteditable="false">Account Health</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag"><span contenteditable="false">Listing Health</span><span class="tag-del" onclick="delTag(this)">×</span></span>
+                <span class="tag-add-btn" onclick="addTag('tags-mops')">+ tag</span>
+              </div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Goal</div>
+              <div class="goal-text"><span contenteditable="false">Remove manual tasks from the core team</span></div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">Key measurements</div>
+              <ul class="bullet-list" id="list-mops-meas">
+                <li><span class="dot">·</span><span contenteditable="false">Consistency</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">·</span><span contenteditable="false">Ability</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-mops-meas','·')">+ add</button>
+            </div>
+            <div class="card-section">
+              <div class="section-label">KPIs</div>
+              <ul class="bullet-list kpi" id="list-mops-kpi">
+                <li><span class="dot">→</span><span contenteditable="false">Recurring tasks completed on time vs benchmark</span><span class="item-del" onclick="delItem(this)">×</span></li>
+                <li><span class="dot">→</span><span contenteditable="false">Ad-hoc hours completed per week</span><span class="item-del" onclick="delItem(this)">×</span></li>
+              </ul>
+              <button class="item-add-btn" onclick="addItem('list-mops-kpi','→')">+ add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tier-main -->
+  </div><!-- /tree -->
+</div><!-- /page -->
+
+<div class="toast" id="toast">HTML saved — replace index.html in your repo</div>
+
+<script>
+  // ── TOGGLE CARDS ──
+  function toggle(id) {
+    const card = document.getElementById('card-' + id);
+    if (card) card.classList.toggle('open');
+  }
+  document.getElementById('card-head').classList.add('open');
+
+  // ── H-BAR WIDTH ──
+  function positionHbar() {
+    const tier = document.getElementById('tier-main');
+    const bar = document.getElementById('hbar-main');
+    if (!tier || !bar) return;
+    const cols = tier.querySelectorAll('.tier-col');
+    if (cols.length < 2) return;
+    const tierRect = tier.getBoundingClientRect();
+    const first = cols[0].getBoundingClientRect();
+    const last = cols[cols.length - 1].getBoundingClientRect();
+    const left = first.left + first.width / 2 - tierRect.left;
+    const right = last.left + last.width / 2 - tierRect.left;
+    bar.style.left = left + 'px';
+    bar.style.width = (right - left) + 'px';
+  }
+  window.addEventListener('load', positionHbar);
+  window.addEventListener('resize', positionHbar);
+
+  // ── EDIT MODE ──
+  let isEditing = false;
+  function toggleEdit() {
+    isEditing = !isEditing;
+    document.body.classList.toggle('editing', isEditing);
+    document.querySelectorAll('[contenteditable]').forEach(el => {
+      el.contentEditable = isEditing ? 'true' : 'false';
+    });
+    document.getElementById('btn-edit').style.display = isEditing ? 'none' : '';
+    document.getElementById('btn-save').style.display = isEditing ? '' : 'none';
+    document.getElementById('edit-badge').classList.toggle('hidden', !isEditing);
+    // open all cards when editing for convenience
+    if (isEditing) {
+      document.querySelectorAll('.card').forEach(c => c.classList.add('open'));
+    }
+  }
+
+  // ── ADD / DELETE LIST ITEMS ──
+  function addItem(listId, dot) {
+    const list = document.getElementById(listId);
+    const isKpi = list.classList.contains('kpi');
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="dot">${dot}</span><span contenteditable="true">New item</span><span class="item-del" onclick="delItem(this)">×</span>`;
+    list.appendChild(li);
+    const span = li.querySelector('[contenteditable]');
+    span.focus();
+    const range = document.createRange();
+    range.selectNodeContents(span);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  }
+  function delItem(btn) {
+    btn.closest('li').remove();
+  }
+
+  // ── ADD / DELETE TAGS ──
+  function addTag(containerId) {
+    const container = document.getElementById(containerId);
+    const addBtn = container.querySelector('.tag-add-btn');
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = `<span contenteditable="true">New tag</span><span class="tag-del" onclick="delTag(this)">×</span>`;
+    container.insertBefore(tag, addBtn);
+    const span = tag.querySelector('[contenteditable]');
+    span.focus();
+    const range = document.createRange();
+    range.selectNodeContents(span);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  }
+  function delTag(btn) {
+    btn.closest('.tag').remove();
+  }
+
+  // ── SAVE HTML ──
+  function saveHTML() {
+    // turn off editing state for clean save
+    document.body.classList.remove('editing');
+    document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = 'false');
+    document.getElementById('btn-edit').style.display = '';
+    document.getElementById('btn-save').style.display = 'none';
+    document.getElementById('edit-badge').classList.add('hidden');
+    isEditing = false;
+
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
